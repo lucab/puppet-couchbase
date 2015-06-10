@@ -3,7 +3,7 @@ define couchbase::moxi (
   $port            = $::couchbase::params::moxi_port,
   $version         = $::couchbase::params::moxi_version,
   $bucket          = $name,
-  $cluster_urls    = ['http://127.0.0.1:8091/pools/default/bucketsStreaming/default'],
+  $cluster_urls    = ["http://127.0.0.1:8091/pools/default/bucketsStreaming/${bucket}"],
   $nodes           = ['127.0.0.1:8091'],
   $parameters      = ''
 ) {
