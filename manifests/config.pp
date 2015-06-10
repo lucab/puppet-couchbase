@@ -123,10 +123,6 @@ class couchbase::config (
     notify  => Exec['couchbase-cluster-setup'],
   }
 
-  # Collect cluster node entries for config (from stored configs & PuppetDB)  
-  Couchbase::Couchbasenode <<| server_group == $server_group |>> ->
-
-
   exec { 'couchbase-cluster-setup':
     path        => ['/usr/local/bin', '/usr/bin/', '/sbin', '/bin', '/usr/sbin',
                   '/opt/couchbase/bin'],
@@ -137,4 +133,14 @@ class couchbase::config (
     logoutput   => true,
     refreshonly => true,
   }
+
+  if empty($::couchbase::static_cluster) {
+    # Collect cluster node entries for config (from stored configs & PuppetDB)
+    Couchbase::Couchbasenode <<| server_group == $server_group |>> -> Exec['couchbase-cluster-setup']
+  } else {
+    # Create static cluster nodes (hardcoded in config)
+    validate_hash($::couchbase::static_cluster)
+    create_resources(couchbase::couchbasenode, $::couchbase::static_cluster)
+  }
+
 }

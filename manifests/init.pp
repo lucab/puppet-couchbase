@@ -57,18 +57,31 @@ class couchbase
   $data_dir          = $::couchbase::params::data_dir,
   $index_dir        = undef,
   $download_url_base = $::couchbase::params::download_url_base,
+  $static_cluster    = {},
+  $buckets           = {},
+  $moxi_instances    = {},
 ) inherits ::couchbase::params {
   
   # TODO: Add parameter data validation
 
   # Define initialized node as a couchbase node (This will always be true
   # so this is a safe assumption to make.
-  @@couchbase::couchbasenode { $nodename:
-    ensure       => $ensure,
-    server_name  => $nodename,
-    server_group => $server_group,
-    user         => $user,
-    password     => $password,
+  if empty($static_cluster) {
+    @@couchbase::couchbasenode { $nodename:
+      ensure       => $ensure,
+      server_name  => $nodename,
+      server_group => $server_group,
+      user         => $user,
+      password     => $password,
+    }
+  } else {
+    couchbase::couchbasenode { $nodename:
+      ensure       => $ensure,
+      server_name  => $nodename,
+      server_group => $server_group,
+      user         => $user,
+      password     => $password,
+    }
   }
 
   if $ensure == present {
@@ -112,6 +125,18 @@ class couchbase
     ->
 
     Anchor['couchbase::end']
+
+    if !empty($::couchbase::buckets) {
+      # Create static buckets (hardcoded in config)
+      validate_hash($::couchbase::buckets)
+      create_resources(couchbase::bucket, $::couchbase::buckets)
+    }
+
+    if !empty($::couchbase::moxi_instances) {
+      # Create moxi proxies (hardcoded in config)
+      validate_hash($::couchbase::moxi_instances)
+      create_resources(couchbase::moxi, $::couchbase::moxi_instances)
+    }
 
   }
   elsif $ensure == absent {
