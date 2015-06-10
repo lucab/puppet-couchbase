@@ -19,9 +19,15 @@
 
 ### END INIT INFO
 
+<% if scope.lookupvar("osfamily") == "Debian" %>
+. /lib/lsb/init-functions
+
+[ -f /etc/default/moxi-server_<%= @port %> ] && . /etc/default/moxi-server_<%= @port %>
+<% else %>
 . /etc/init.d/functions
 
 [ -f /etc/sysconfig/moxi-server_<%= @port %> ] && . /etc/sysconfig/moxi-server_<%= @port %>
+<% end %>
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
@@ -36,12 +42,16 @@ test -f $DAEMON || exit 0
 # test -f $MOXI_CLUSTER_CFG || exit 0
 
 
-echo "$DAEMON $PARAMETERS -d -Z \"$OPTIONS\" -P $PIDFILE $CLUSTER_CONFIG > /opt/couchbase/var/lib/couchbase/logs/moxi-server_<%= @port %>.log 2>&1"
+echo "$DAEMON $PARAMETERS -d -Z \"$OPTIONS\" -P $PIDFILE $CLUSTER_CONFIG >> /opt/couchbase/var/lib/couchbase/logs/moxi-server_<%= @port %>.log 2>&1"
 start() {
     cd /opt/couchbase/bin
     ulimit -n 10240
     ulimit -c unlimited
+<% if scope.lookupvar("osfamily") == "Debian" %>
+    $DAEMON $PARAMETERS -d -Z $OPTIONS -P $PIDFILE $CLUSTER_CONFIG >> /opt/couchbase/var/lib/couchbase/logs/moxi-server_<%= @port %>.log 2>&1
+<% else %>
     daemon --user couchbase "$DAEMON -vv -d -Z \"$OPTIONS\" -P $PIDFILE $CLUSTER_CONFIG > /opt/couchbase/var/lib/couchbase/logs/moxi-server_<%= @port %>.log 2>&1"
+<% end %>
     
     errcode=$?
     return $errcode

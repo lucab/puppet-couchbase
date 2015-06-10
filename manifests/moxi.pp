@@ -18,6 +18,12 @@ define couchbase::moxi (
   $cluster_config = join($cluster_urls,',')
 
   if $::kernel == 'Linux' {
+    if $::osfamily == 'Debian' {
+      $conf_file = "/etc/default/moxi-server_${port}"
+    } else {
+      $conf_file = "/etc/sysconfig/moxi-server_${port}"
+    }
+
     # Linux uses moxi from couchbase bins
     if $::couchbase::ensure == present {
 
@@ -27,16 +33,17 @@ define couchbase::moxi (
         mode    => '0755',
         content => template("${module_name}/moxi-init.d.erb"),
         notify  => Service["moxi-server_${port}"],
+        require => [ Class['couchbase::install'] ],
       }
 
       # TODO: Collect ports and urls of active clusters. but right now:
-      file { "/etc/sysconfig/moxi-server_${port}":
+      file { $conf_file:
         owner   => 'root',
         group   => 'root',
         mode    => '0644',
-        content => "OPTIONS='${node_config}'\n
-                    CLUSTER_CONFIG='${cluster_config}'
-                    PARAMETERS='-vvv'",
+        content => "OPTIONS='${node_config}'
+CLUSTER_CONFIG='${cluster_config}'
+PARAMETERS='-vvv -u couchbase'\n",
         notify  => Service["moxi-server_${port}"],
       }
 
