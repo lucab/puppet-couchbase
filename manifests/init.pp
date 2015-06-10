@@ -90,7 +90,9 @@ class couchbase
     file {$data_dir:
       ensure  => directory,
       recurse => true,
+      mode    => '0660',
       owner   => 'couchbase',
+      group   => 'couchbase',
     }
 
     ->
