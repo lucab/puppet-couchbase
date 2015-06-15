@@ -25,8 +25,8 @@
 define couchbase::couchbasenode (
   $server_name  = $::fqdn,
   $server_group = 'default',
-  $user         = 'couchbase',
-  $password     = 'password',
+  $user         = $::couchbase::user,
+  $password     = $::couchbase::password,
   $ensure       = $::couchbase::params::ensure,
   $autofailover = $::couchbase::params::autofailover,
 ) {
