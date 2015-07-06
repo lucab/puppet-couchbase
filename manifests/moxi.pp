@@ -43,7 +43,7 @@ define couchbase::moxi (
         mode    => '0644',
         content => "OPTIONS='${node_config}'
 CLUSTER_CONFIG='${cluster_config}'
-PARAMETERS='-vvv -u couchbase'\n",
+PARAMETERS='-v -u couchbase'\n",
         notify  => Service["moxi-server_${port}"],
       }
 
